@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Data Display and Search</title>
+    <!-- Add Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous">
+    <style>
+        body {
+            text-align: center;
+            background-image: url('https://i.ibb.co/xj853CT/2833131.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh; /* Set to full viewport height for vertical centering */
+            margin: 30px 0; /* Add margin at the top and bottom */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #top-container {
+            background-color: white;
+            padding: 5px;
+            border-radius: 10px;
+            margin-bottom: 20px; /* Reduce margin at the bottom for smaller screens */
+        }
+
+        #fish-guard-heading {
+            color: black;
+            margin: 0;
+            margin-bottom: 10px; /* Reduce margin between heading and buttons for smaller screens */
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Reduce gap between buttons for smaller screens */
+            justify-content: center;
+        }
+
+        .watch-button,
+        .clean-button,
+        .feed-button {
+            font-size: 18px; /* Reduce button font size for smaller screens */
+            padding: 10px 20px; /* Adjust button padding for smaller screens */
+        }
+
+        #data-container {
+            margin-top: auto;
+            font-size: 14px; /* Reduce font size for smaller screens */
+        }
+    </style>
+</head>
+<body>
+    <div id="top-container">
+        <h1 id="fish-guard-heading">FISH GUARD</h1>
+    </div>
+
+    <div class="button-container">
+        <button class="watch-button" id="watchButton">WATCH</button>
+        <button class="clean-button" id="cleanButton">CLEAN</button>
+        <button class="feed-button" id="feedButton" data-value="0">FEED</button>
+    </div>
+
+    <div id="left-image-container">
+        <!-- Your image container content -->
+    </div>
+
+    <div id="data-container">
+        <!-- Add your data display code here -->
+        <div class="data-box date-box"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Function to display data on the webpage
+            function displayData(data) {
+                var dateBox = $('.date-box');
+                dateBox.text(data[data.length - 1].ldate);
+
+                var content = data[data.length - 1].content;
+                $('#watchButton').attr('data-content', content);
+
+                // Set the text color to blue
+                dateBox.css('color', 'blue');
+            }
+
+            // Function to fetch and display data
+            function fetchData() {
+                var googleAppsScriptUrl = 'https://script.google.com/macros/s/AKfycbyyx5jYFLfrTY6TnZGAngcT9CC4BQzEt_41v_N-Zj6stm31m3gKXOeRKi6NV_6EqskU6Q/exec';
+                $.getJSON(googleAppsScriptUrl, function (data) {
+                    displayData(data);
+                });
+            }
+
+            // Function to handle button click
+            function handleButton(link) {
+                // You can add specific logic here if needed
+                console.log("Button clicked! Link: " + link);
+            }
+
+            // Function to search Google with the content
+            function searchDisplayedData() {
+                var content = $('.date-box').text();
+                if (content && content.startsWith('https://')) {
+                    window.open(content, '_blank');
+                } else {
+                    alert('No valid content available or content does not start with "https://".');
+                }
+            }
+
+            // Function to handle clean button click
+            function cleanFishTank() {
+                var cleanLink = 'https://blynk.cloud/external/api/update?token=Vkx9niST1XaTYgpl9prdH5GA8LwmyKtH&V1=';
+
+                // Get the current value of V1
+                var currentValue = $('#cleanButton').data('value');
+
+                // Toggle the value between 0 and 1
+                var newValue = currentValue === 1 ? 0 : 1;
+
+                // Update the button data-value attribute
+                $('#cleanButton').data('value', newValue);
+
+                // Construct the complete link
+                cleanLink += newValue;
+
+                // Perform the request without opening a new tab
+                $.get(cleanLink);
+
+                // Update button color based on the new value
+                $('#cleanButton').css('background-color', newValue === 1 ? 'green' : 'white');
+            }
+
+            // Function to handle feed button click
+            function feedFish() {
+                var feedLink = 'https://blynk.cloud/external/api/update?token=Vkx9niST1XaTYgpl9prdH5GA8LwmyKtH&V0=';
+
+                // Get the current value of V0
+                var currentValue = $('#feedButton').data('value');
+
+                // Toggle the value between 0 and 1
+                var newValue = currentValue === 1 ? 0 : 1;
+
+                // Update the button data-value attribute
+                $('#feedButton').data('value', newValue);
+
+                // Construct the complete link
+                feedLink += newValue;
+
+                // Perform the request without opening a new tab
+                $.get(feedLink);
+
+                // Update button color based on the new value
+                $('#feedButton').css('background-color', newValue === 1 ? 'green' : 'white');
+            }
+
+            // Fetch and display data initially
+            fetchData();
+
+            // Set up a timer to fetch and display data every 5 seconds
+            setInterval(fetchData, 3000);
+
+            // Assign the searchDisplayedData function to the onclick attribute of the button
+            $('#watchButton').click(searchDisplayedData);
+           
+            // Assign the cleanFishTank function to the onclick attribute of the clean button
+            $('#cleanButton').click(cleanFishTank);
+           
+            // Assign the feedFish function to the onclick attribute of the feed button
+            $('#feedButton').click(feedFish);
+        });
+    </script>
+</body>
+</html>
